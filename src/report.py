@@ -16,7 +16,7 @@ def save_report(
     data: dict[str, Any],
     output_path: str = "temp/report.json",
 ) -> dict[str, Any]:
-    """Build a report and save it as JSON."""
+
     report = build_report(data)
 
     destination = Path(output_path)
