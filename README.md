@@ -211,3 +211,29 @@ nothing to commit, working tree clean
 
 </div>
 
+## DIFF
+<div dir="rtl">
+درستور diffبه تنهایی برای مقایسه دو برنامه استفاده می شود 
+و در gitهم کاربرد دارد ولی چند حالت  برای استفاده از این دستور وجود دارد یکی از آنها :
+</div>
+
+```bash
+git diff
+```
+<div dir="rtl">
+این دستور وضعیت تغییرات stage نشده را با Working Tree
+</div>
+
+```bash
+git diff --staged
+```
+<div dir="rtl">
+دستور بالا تفاوت تغییرات Stageشده را با Working Tree نمایش می دهد به عبارتی نشان میدهد در Commit بعدی دقیقا چه اتفاقی می افتد
+</div>
+
+```bash
+git diff <commit1> <commit2>
+```
+<div dir="rtl">
+دستور بالا هم تفاوت دو Commit دلخواه را به کمک HashID آنها برسی میکند
+</div>
