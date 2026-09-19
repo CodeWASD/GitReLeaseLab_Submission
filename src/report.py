@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
 from typing import Any
+from datetime import datetime, timezone
 
 
 def build_report(data: dict[str, Any]) -> dict[str, Any]:
@@ -9,6 +10,7 @@ def build_report(data: dict[str, Any]) -> dict[str, Any]:
         "project": data["project"],
         "status": data["status"],
         "summary": f"{data['project']} is {data['status']}",
+        "generated_at": datetime.now(timezone.utc).isoformat(),
     }
 
 
