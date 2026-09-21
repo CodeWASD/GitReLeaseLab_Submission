@@ -3,5 +3,6 @@
   "algorithm": "SHA256",
   "expected_hash": "02a1027e00a8f590cf29f075adfc768ff91d0c8981ac88c360982eca7ee71fa4",
   "actual_hash": "02a1027e00a8f590cf29f075adfc768ff91d0c8981ac88c360982eca7ee71fa4",
-  "status": "PASS"
+  "status": "PASS",
+  "reason": "Actual hash matches expected hash."
 }
