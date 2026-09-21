@@ -237,3 +237,217 @@ git diff <commit1> <commit2>
 <div dir="rtl">
 دستور بالا هم تفاوت دو Commit دلخواه را به کمک HashID آنها برسی میکند
 </div>
+# Git Release Lab
+
+این پروژه یک تمرین عملی برای یادگیری چرخه کامل مدیریت نسخه و انتشار نرم‌افزار با Git است.
+
+در این پروژه فرایند زیر انجام می‌شود:
+
+```text
+Source Code
+    ↓
+Git Repository
+    ↓
+Commit History
+    ↓
+Feature Branch
+    ↓
+Merge and Bugfix
+    ↓
+Release Commit
+    ↓
+Git Tag
+    ↓
+Release Package
+    ↓
+SHA256
+    ↓
+Release Verification
+```
+
+## هدف پروژه
+
+هدف پروژه، یادگیری عملی مفاهیم زیر است:
+
+- مدیریت Source Code با Git
+- ایجاد Commitهای معنی‌دار
+- توسعه قابلیت‌ها در Feature Branch
+- ادغام Branchها
+- آماده‌سازی نسخه نهایی
+- استفاده از Semantic Versioning
+- ایجاد Annotated Tag
+- ساخت بسته Release از یک Tag مشخص
+- تولید SHA256 برای بسته انتشار
+- بررسی سلامت و اصالت بسته Release
+
+## ساختار پروژه
+
+```text
+GitReleaseLab_Submission/
+│
+├── repository/
+│   ├── .venv/
+│   ├── src/
+│   │   ├── app.py
+│   │   ├── report.py
+│   │   └── .env
+│   ├── config/
+│   │   └── settings.json
+│   ├── tests/
+│   │   └── tests_basic.py
+│   ├── README.md
+│   ├── VERSION
+│   └── .gitignore
+│
+├── release/
+│   ├── GitReleaseLab_v0.1.0.zip
+│   └── SHA256SUMS
+│
+├── tools/
+│   └── verify_release.py
+│
+├── evidence/
+│   ├── git_evidence.txt
+│   └── verification_result.json
+│
+└── test_cases.md
+```
+
+### کاربرد پوشه‌ها و فایل‌ها
+
+- `repository/`: مخزن اصلی Git و فایل‌های Source Code پروژه
+- `repository/src/`: کدهای اصلی برنامه
+- `repository/config/`: تنظیمات برنامه
+- `repository/tests/`: تست‌های خودکار پروژه
+- `repository/VERSION`: شماره نسخه فعلی پروژه
+- `repository/.gitignore`: مشخص‌کردن فایل‌هایی که نباید وارد Git شوند
+- `release/`: بسته نهایی انتشار و فایل SHA256 آن
+- `tools/verify_release.py`: ابزار بررسی صحت بسته انتشار
+- `evidence/`: مدارک اجرای دستورات Git و نتیجه Verification
+- `test_cases.md`: سناریوها و نتایج تست پروژه
+
+> فایل‌های `.venv`، `.env`، `__pycache__` و فایل‌های حاوی اطلاعات محرمانه نباید وارد Git یا بسته Release شوند.
+
+## ساخت Release
+
+قبل از ساخت Release باید تمام تغییرات Commit شده باشند:
+
+```powershell
+cd .\repository
+git status
+```
+
+خروجی مورد انتظار:
+
+```text
+nothing to commit, working tree clean
+```
+
+سپس Tag موردنظر را بررسی می‌کنیم:
+
+```powershell
+git show --no-patch --decorate v0.1.0
+```
+
+بسته Release مستقیماً از Tag ساخته می‌شود:
+
+```powershell
+New-Item -ItemType Directory -Force ..\release | Out-Null
+
+git archive `
+    --format=zip `
+    --prefix=GitReleaseLab_v0.1.0/ `
+    --output=..\release\GitReleaseLab_v0.1.0.zip `
+    v0.1.0
+```
+
+استفاده از `git archive` باعث می‌شود بسته انتشار دقیقاً از محتوای Commit مربوط به Tag ساخته شود و فایل‌های Untracked، پوشه `.git` و فایل‌های Ignoreشده وارد بسته نشوند.
+
+## تولید SHA256
+
+پس از ساخت فایل ZIP، مقدار SHA256 آن با PowerShell محاسبه می‌شود:
+
+```powershell
+$archive = "..\release\GitReleaseLab_v0.1.0.zip"
+$checksum = "..\release\SHA256SUMS"
+
+$hash = (Get-FileHash $archive -Algorithm SHA256).Hash.ToLower()
+
+"$hash  $(Split-Path $archive -Leaf)" |
+    Set-Content $checksum -Encoding ascii
+```
+
+برای مشاهده مقدار ذخیره‌شده:
+
+```powershell
+Get-Content ..\release\SHA256SUMS
+```
+
+ساختار فایل `SHA256SUMS`:
+
+```text
+<sha256-hash>  GitReleaseLab_v0.1.0.zip
+```
+
+SHA256 مانند اثر انگشت دیجیتال فایل عمل می‌کند. اگر حتی بخش کوچکی از فایل ZIP تغییر کند، مقدار SHA256 آن نیز تغییر خواهد کرد.
+
+## بررسی صحت Release
+
+برای اجرای ابزار Verification ابتدا به پوشه اصلی Submission برمی‌گردیم:
+
+```powershell
+cd ..
+```
+
+اگر محیط مجازی فعال است:
+
+```powershell
+python .\tools\verify_release.py
+```
+
+بدون فعال‌کردن محیط مجازی:
+
+```powershell
+.\repository\.venv\Scripts\python.exe .\tools\verify_release.py
+```
+
+اسکریپت مراحل زیر را انجام می‌دهد:
+
+1. مقدار مورد انتظار را از `release/SHA256SUMS` می‌خواند.
+2. مقدار واقعی SHA256 فایل ZIP را محاسبه می‌کند.
+3. دو مقدار را مقایسه می‌کند.
+4. نتیجه را در `evidence/verification_result.json` ذخیره می‌کند.
+
+## وضعیت‌های Verification
+
+| وضعیت | مفهوم |
+|---|---|
+| `PASS` | فایل موجود است و SHA256 واقعی با مقدار مورد انتظار برابر است. |
+| `FAIL` | فایل موجود است، اما SHA256 آن با مقدار مورد انتظار تفاوت دارد. |
+| `MISSING` | فایل ZIP، فایل `SHA256SUMS` یا مقدار معتبر Hash پیدا نشده است. |
+
+نمونه نتیجه موفق:
+
+```json
+{
+  "file": "GitReleaseLab_v0.1.0.zip",
+  "algorithm": "SHA256",
+  "expected_hash": "...",
+  "actual_hash": "...",
+  "status": "PASS"
+}
+```
+
+## نسخه پروژه
+
+نسخه فعلی:
+
+```text
+0.1.0
+```
+
+Tag انتشار:
+
+```text
+v0.1.0
+```

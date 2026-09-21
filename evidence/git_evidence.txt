@@ -1,0 +1,50 @@
+$ git status
+On branch master
+nothing to commit, working tree clean
+_____________________________________________________________________________
+$ git log --oneline --graph --decorate --all
+* e7f539f (HEAD -> master) chore: remove obsolete project files
+* 0a3eeed (tag: v0.1.0) chore: prepare v0.1.0 release
+* d74ec19 feat: adding some info about DIFF
+*   631224b Merge branch 'addingFeature'
+|\
+| * 8e4cbba (addingFeature) feat: add TimesTamp to JSON report-2
+* | 1efddbe Revert "feat: add TimesTamp to JSON report"
+|/
+* 320757d feat: add TimesTamp to JSON report
+* aeef4d2 feat: add basic automated tests
+* 05a8009 feat: feat: add version display and JSON report generator
+* 855700f chore: initialize project structures
+* 3532299 chore:Set version to 0.1.0-dev
+* 3b7e4b1 chore:add git ignore rule
+* b97f020 chore:add project README.md
+_____________________________________________________________________________
+$ git branch
+  addingFeature
+* master
+_____________________________________________________________________________
+$ git tag
+v0.1.0
+_____________________________________________________________________________
+$ git show v0.1.0
+tag v0.1.0
+Tagger: amirali <ahmadiamirali2004@gmail.com>
+Date:   Sat Sep 19 14:25:19 2026 +0330
+
+Release v0.1.0
+
+commit 0a3eeedce9552785ff2a351234087783a1709145 (tag: v0.1.0)
+Author: amirali <ahmadiamirali2004@gmail.com>
+Date:   Sat Sep 19 14:20:27 2026 +0330
+
+    chore: prepare v0.1.0 release
+
+diff --git a/VERSION b/VERSION
+index 0d4d124..6e8bf73 100644
+--- a/VERSION
++++ b/VERSION
+@@ -1 +1 @@
+-0.1.0-dev
++0.1.0
+_____________________________________________________________________________
+
