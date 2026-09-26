@@ -3,7 +3,11 @@ On branch master
 nothing to commit, working tree clean
 _____________________________________________________________________________
 $ git log --oneline --graph --decorate --all
-* e7f539f (HEAD -> master) chore: remove obsolete project files
+* ac9b85e (HEAD -> master) chore(release): prepare v0.1.1 and update verification artifacts
+* 37f5ba2 (tag: v0.1.1) fix: accept release paths as command-line arguments
+* 00fd437 chore: remove SHA256sums.txt files
+* e46114b chore: document release and verification workflow
+* e7f539f chore: remove obsolete project files
 * 0a3eeed (tag: v0.1.0) chore: prepare v0.1.0 release
 * d74ec19 feat: adding some info about DIFF
 *   631224b Merge branch 'addingFeature'
@@ -18,6 +22,7 @@ $ git log --oneline --graph --decorate --all
 * 3532299 chore:Set version to 0.1.0-dev
 * 3b7e4b1 chore:add git ignore rule
 * b97f020 chore:add project README.md
+
 _____________________________________________________________________________
 $ git branch
   addingFeature
@@ -25,6 +30,7 @@ $ git branch
 _____________________________________________________________________________
 $ git tag
 v0.1.0
+v0.1.1
 _____________________________________________________________________________
 $ git show v0.1.0
 tag v0.1.0
@@ -47,4 +53,234 @@ index 0d4d124..6e8bf73 100644
 -0.1.0-dev
 +0.1.0
 _____________________________________________________________________________
+$ git show v0.1.1
+tag v0.1.1
+Tagger: amirali <ahmadiamirali2004@gmail.com>
+Date:   Mon Sep 21 11:23:06 2026 +0330
+
+Release v0.1.1
+
+commit 37f5ba256f1d0c81c1f767a776cea930954fabf7 (tag: v0.1.1)
+Author: amirali <ahmadiamirali2004@gmail.com>
+Date:   Mon Sep 21 10:37:48 2026 +0330
+
+    fix: accept release paths as command-line arguments
+
+diff --git a/evidence/verification_result.json b/evidence/verification_result.json
+index 07fbf6a..68b8271 100644
+--- a/evidence/verification_result.json
++++ b/evidence/verification_result.json
+@@ -3,5 +3,6 @@
+   "algorithm": "SHA256",
+   "expected_hash": "02a1027e00a8f590cf29f075adfc768ff91d0c8981ac88c360982eca7ee71fa4",
+   "actual_hash": "02a1027e00a8f590cf29f075adfc768ff91d0c8981ac88c360982eca7ee71fa4",
+-  "status": "PASS"
++  "status": "PASS",
++  "reason": "Actual hash matches expected hash."
+ }
+diff --git a/tools/verify_release.py b/tools/verify_release.py
+index 0387cf7..ebdec02 100644
+--- a/tools/verify_release.py
++++ b/tools/verify_release.py
+@@ -1,25 +1,40 @@
++import argparse
+ import hashlib
+ import json
+ import sys
+ from pathlib import Path
+
+
+-from pathlib import Path
++def parse_arguments() -> argparse.Namespace:
++    parser = argparse.ArgumentParser(
++        description="Verify a release archive using a SHA256SUMS file."
++    )
++
++    parser.add_argument(
++        "--archive",
++        required=True,
++        type=Path,
++        help="Path to the release archive.",
++    )
+
+-ARCHIVE_PATH = Path(
+-    r"C:\Users\11\Desktop\file\GitReLeaseLab_Submission\GitReleaseLab\release\GitReleaseLab_v0.1.0.zip"
+-)
++    parser.add_argument(
++        "--checksum",
++        required=True,
++        type=Path,
++        help="Path to the SHA256SUMS.txt file.",
++    )
++
++    parser.add_argument(
++        "--output",
++        required=True,
++        type=Path,
++        help="Path where the JSON verification result will be saved.",
++    )
+
+-CHECKSUM_PATH = Path(
+-    r"C:\Users\11\Desktop\file\GitReLeaseLab_Submission\GitReleaseLab\release\SHA256SUMS"
+-)
++    return parser.parse_args()
+
+-RESULT_PATH = Path(
+-    r"C:\Users\11\Desktop\file\GitReLeaseLab_Submission\GitReleaseLab\evidence\verification_result.json"
+-)
+
+ def calculate_sha256(file_path: Path) -> str:
+-    """Calculate the SHA256 hash without loading the whole file into memory."""
+     sha256 = hashlib.sha256()
+
+     with file_path.open("rb") as file:
+@@ -29,75 +44,119 @@ def calculate_sha256(file_path: Path) -> str:
+     return sha256.hexdigest()
+
+
+-def read_expected_hash(checksum_path: Path, archive_name: str) -> str | None:
+-    """Read the expected hash for archive_name from a SHA256SUMS file."""
++def read_expected_hash(
++    checksum_path: Path,
++    archive_name: str,
++) -> tuple[str | None, str | None]:
++
+     if not checksum_path.is_file():
+-        return None
++        return None, "Checksum file does not exist."
++
++    try:
++        lines = checksum_path.read_text(
++            encoding="utf-8-sig"
++        ).splitlines()
++    except OSError as error:
++        return None, f"Cannot read checksum file: {error}"
+
+-    for line in checksum_path.read_text(encoding="ascii").splitlines():
++    for line in lines:
+         line = line.strip()
++
+         if not line:
+             continue
+
+         parts = line.split(maxsplit=1)
++
+         if len(parts) != 2:
+             continue
+
+-        expected_hash, listed_name = parts
+-        listed_name = listed_name.lstrip("*").strip()
++        expected_hash, listed_file = parts
++
++        listed_file = listed_file.lstrip("*").strip()
++        listed_name = listed_file.replace("\\", "/").rsplit("/", 1)[-1]
+
+-        if listed_name == archive_name:
+-            expected_hash = expected_hash.lower()
+-            if len(expected_hash) == 64 and all(
+-                character in "0123456789abcdef" for character in expected_hash
+-            ):
+-                return expected_hash
++        if listed_name != archive_name:
++            continue
+
+-    return None
++        expected_hash = expected_hash.lower()
+
++        is_valid_sha256 = (
++            len(expected_hash) == 64
++            and all(
++                character in "0123456789abcdef"
++                for character in expected_hash
++            )
++        )
++
++        if not is_valid_sha256:
++            return None, "Checksum entry is not a valid SHA256 value."
++
++        return expected_hash, None
++
++    return None, "Archive entry was not found in checksum file."
++
++
++def save_result(output_path: Path, result: dict) -> None:
++    output_path.parent.mkdir(parents=True, exist_ok=True)
++
++    output_path.write_text(
++        json.dumps(result, indent=2, ensure_ascii=False) + "\n",
++        encoding="utf-8",
++    )
+
+
+ def main() -> int:
+-    archive_path = ARCHIVE_PATH
+-    checksum_path = CHECKSUM_PATH
+-    result_path = RESULT_PATH
++    arguments = parse_arguments()
++
++    archive_path = arguments.archive
++    checksum_path = arguments.checksum
++    output_path = arguments.output
+
+-    expected_hash = read_expected_hash(
++    expected_hash, checksum_error = read_expected_hash(
+         checksum_path,
+-        archive_path.name
++        archive_path.name,
+     )
+
+-    actual_hash = (
+-        calculate_sha256(archive_path)
+-        if archive_path.is_file()
+-        else None
+-    )
++    actual_hash = None
++    archive_error = None
++
++    if archive_path.is_file():
++        try:
++            actual_hash = calculate_sha256(archive_path)
++        except OSError as error:
++            archive_error = f"Cannot read archive: {error}"
++    else:
++        archive_error = "Archive file does not exist."
+
+     if expected_hash is None or actual_hash is None:
+         status = "MISSING"
+         exit_code = 2
++        reason = archive_error or checksum_error
+     elif actual_hash == expected_hash:
+         status = "PASS"
+         exit_code = 0
++        reason = "Actual hash matches expected hash."
+     else:
+         status = "FAIL"
+         exit_code = 1
++        reason = "Actual hash does not match expected hash."
+
+     result = {
+-        "file": "GitReleaseLab_v0.1.0.zip",
++        "file": archive_path.name,
+         "algorithm": "SHA256",
+         "expected_hash": expected_hash,
+         "actual_hash": actual_hash,
+         "status": status,
++        "reason": reason,
+     }
+
+-    json_output = json.dumps(result, indent=2)
+-    result_path.write_text(json_output + "\n", encoding="utf-8")
+-    print(json_output)
+-    print(f"\nResult saved to: {result_path.name}")
++    save_result(output_path, result)
++
++    print(json.dumps(result, indent=2, ensure_ascii=False))
++    print(f"\nResult saved to: {output_path}")
+
+     return exit_code
+
+
+ if __name__ == "__main__":
+-    sys.exit(main())
++    sys.exit(main())
 
