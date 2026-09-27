@@ -1,32 +1,20 @@
 import json
-from pathlib import Path
-from typing import Any
+
+from src.report import build_report, save_report
 
 
-def build_report(data: dict[str, Any]) -> dict[str, Any]:
-    """Build a simple report from the supplied data."""
-    return {
-        "project": data["project"],
-        "status": data["status"],
-        "summary": f"{data['project']} is {data['status']}",
-    }
-
-
-def save_report(
-    data: dict[str, Any],
-    output_path: str = "temp/report.json",
-) -> dict[str, Any]:
-    """Build a report and save it as JSON."""
-    report = build_report(data)
-
-    destination = Path(output_path)
-    destination.parent.mkdir(parents=True, exist_ok=True)
-
-    destination.write_text(
-        json.dumps(report, indent=2),
-        encoding="utf-8",
+def test_category_default_behavior():
+    report = build_report(
+        {
+            "project": "GitReleaseLab",
+            "status": "development",
+        }
     )
-def test_report_contains_category(self):
+
+    assert report["category"] == "general"
+
+
+def test_explicit_category():
     report = build_report(
         {
             "project": "GitReleaseLab",
@@ -35,18 +23,29 @@ def test_report_contains_category(self):
         }
     )
 
-    self.assertEqual(report["category"], "release")
+    assert report["category"] == "release"
 
 
-def test_old_report_without_category_still_works(self):
-    report = build_report(
-        {
-            "project": "GitReleaseLab",
-            "status": "development",
-        }
+def test_backward_compatibility(tmp_path):
+    output_file = tmp_path / "report.json"
+
+    legacy_data = {
+        "project": "GitReleaseLab",
+        "status": "development",
+    }
+
+    report = save_report(
+        legacy_data,
+        output_path=str(output_file),
     )
 
-    self.assertEqual(report["project"], "GitReleaseLab")
-    self.assertEqual(report["status"], "development")
-    self.assertNotIn("category", report)    
-    return report
+    saved_report = json.loads(
+        output_file.read_text(encoding="utf-8")
+    )
+
+    assert report["project"] == "GitReleaseLab"
+    assert report["status"] == "development"
+    assert report["summary"] == "GitReleaseLab is development"
+    assert report["category"] == "general"
+    assert "generated_at" in report
+    assert saved_report == report
