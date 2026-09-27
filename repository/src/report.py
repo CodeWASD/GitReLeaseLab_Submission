@@ -1,15 +1,24 @@
 import json
+
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
 
 def build_report(data: dict[str, Any]) -> dict[str, Any]:
-    """Build a simple report from the supplied data."""
-    return {
+
+    report = {
         "project": data["project"],
         "status": data["status"],
-        "summary": f"{data['project']} is {data['status']}",
     }
+
+    if "category" in data:
+        report["category"] = data["category"]
+
+    report["summary"] = f"{data['project']} is {data['status']}"
+    report["generated_at"] = datetime.now(timezone.utc).isoformat()
+
+    return report
 
 
 def save_report(
