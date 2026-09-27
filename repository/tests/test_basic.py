@@ -26,5 +26,27 @@ def save_report(
         json.dumps(report, indent=2),
         encoding="utf-8",
     )
+def test_report_contains_category(self):
+    report = build_report(
+        {
+            "project": "GitReleaseLab",
+            "status": "development",
+            "category": "release",
+        }
+    )
 
+    self.assertEqual(report["category"], "release")
+
+
+def test_old_report_without_category_still_works(self):
+    report = build_report(
+        {
+            "project": "GitReleaseLab",
+            "status": "development",
+        }
+    )
+
+    self.assertEqual(report["project"], "GitReleaseLab")
+    self.assertEqual(report["status"], "development")
+    self.assertNotIn("category", report)    
     return report
