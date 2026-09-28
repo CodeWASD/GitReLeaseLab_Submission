@@ -1,0 +1,14 @@
+PS C:\Windows\System32> git --version
+git version 2.55.0.windows.5
+
+PS C:\Windows\System32> python --version
+Python 3.14.7
+
+PS C:\Windows\System32> python -m pip --version
+pip 26.2.1 from C:\Users\11\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\pip (python 3.14)
+
+PS C:\Windows\System32> git  config --global user.name
+amirali
+
+PS C:\Windows\System32> git  config --global user.email
+ahmadiamirali2004@gmail.com

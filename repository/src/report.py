@@ -9,7 +9,11 @@ DEFAULT_CATEGORY = "general"
 
 
 def build_report(data: dict[str, Any]) -> dict[str, Any]:
+<<<<<<< HEAD
     """Build a simple report from the supplied data."""
+=======
+    """Build a report from the supplied data."""
+>>>>>>> feature/report-category
 
     return {
         "project": data["project"],
