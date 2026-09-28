@@ -1,0 +1,59 @@
+# P3.6 — CI Failure and Recovery Evidence
+
+## Failure
+
+**Failing Commit SHA:**  
+`647f2510626d91a0d3ea260e8c478ee77b1265a2`
+
+**Failure Cause:**  
+The expected default category in `test_category_default_behavior` was intentionally changed from `general` to `wrong-category`. The application correctly returned `general`, causing the assertion to fail.
+
+**Failed Job:**  
+`Run pytest`
+
+**Failed Step:**  
+`Run tests`
+
+**Failed Test:**  
+`tests/test_basic.py::test_category_default_behavior`
+
+**Failure Message:**
+
+```text
+AssertionError: assert 'general' == 'wrong-category'
+
+- wrong-category
++ general
+```
+
+**Failure Summary:**
+
+```text
+1 failed, 2 passed in 0.15s
+```
+
+
+
+## Fix
+
+**Fix Commit SHA:**  
+`8123e1b0029585527f0ff9296338a35d54885c65`
+
+**Fix Description:**  
+The expected category in `test_category_default_behavior` was restored from `wrong-category` to `general`.
+
+## Verification
+
+**Local Test Result:**
+
+```text
+3 passed in 0.05s
+```
+
+**Final CI Result:**  
+`PASS`
+
+## Final Result
+
+`PASS`
+
