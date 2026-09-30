@@ -8,4 +8,3 @@ dist/
 build/
 temp/
 test-results.xml
-pytest-results.txt
