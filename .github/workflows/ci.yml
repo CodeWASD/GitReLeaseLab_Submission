@@ -4,6 +4,7 @@ on:
   pull_request:
     branches:
       - master
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -27,6 +28,15 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install pytest
 
-      - name: Run tests
+      - name: Run tests and generat Junit Report
         working-directory: repository
-        run: python -m pytest -q
+        run: python -m pytest -q --junitxml=test-results.xml
+     
+      - name: Upload pytest results
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: pytest-results
+          path: repository/test-results.xml
+          if-no-files-found: error
+          retention-days: 14
