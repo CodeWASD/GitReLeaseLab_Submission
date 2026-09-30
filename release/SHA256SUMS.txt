@@ -1,1 +1,1 @@
-354db4c32b2eeaa8272cb03db36234c9b45c02674a2b1c7bd44393c8ffbbb9d5 *gitReleaseLAb_v0.1.1.zip
+dff5701e0353b8c77e49c34553a3c5d54879a15be31fb426ff7495e4a65f3525 *GitReleaseLab_v0.2.0.zip

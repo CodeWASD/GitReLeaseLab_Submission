@@ -1,0 +1,7 @@
+{
+  "file": "GitReleaseLab_v0.2.0.zip",
+  "algorithm": "SHA256",
+  "expected_hash": "dff5701e0353b8c77e49c34553a3c5d54879a15be31fb426ff7495e4a65f3525",
+  "actual_hash": "dff5701e0353b8c77e49c34553a3c5d54879a15be31fb426ff7495e4a65f3525",
+  "status": "PASS"
+}
