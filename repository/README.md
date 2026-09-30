@@ -1,4 +1,4 @@
-# GitReleaseLab
+# GitReleaseLab_Submission
 
 ## Repository
 
