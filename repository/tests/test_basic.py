@@ -11,7 +11,7 @@ def test_category_default_behavior():
         }
     )
 
-    assert report["category"] ==  "wrong-category"
+    assert report["category"] == "general"
 
 
 def test_explicit_category():
