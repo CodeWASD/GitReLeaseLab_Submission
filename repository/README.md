@@ -1,5 +1,4 @@
-# GitReleaseLab_Submission_README.md
-
+# GitReleaseLab_Submission
 
 ## Repository
 
